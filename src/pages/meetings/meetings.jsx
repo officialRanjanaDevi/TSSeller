@@ -2,26 +2,40 @@ import axios from "axios";
 import React, { useEffect, useState ,useContext } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { UserContext } from "../../components/context/UserContext";
+import { MdDelete } from "react-icons/md";
+import toast from "react-hot-toast";
 export default function Meetings() {
   const [meetings, setMeetings] = useState([]);
   const [authenticated] = useContext(UserContext);
   const id=authenticated.user.storeId
- console.log(authenticated.user.storeId)
+  const fetchMeetings = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_ENDPOINT}/api/v1/meetings`
+      );
+      setMeetings(response.data);
+      console.log("hhh", response.data);
+    } catch (error) {
+      console.error("Error fetching meetings:", error);
+    }
+  };
   useEffect(() => {
-    const fetchMeetings = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_ENDPOINT}/api/v1/meetings`
-        );
-        setMeetings(response.data);
-        console.log("hhh", response.data);
-      } catch (error) {
-        console.error("Error fetching meetings:", error);
-      }
-    };
-
     fetchMeetings();
   }, []);
+  const deleteMeet=async(id)=>{
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_ENDPOINT}/api/v1/meeting/${id}`
+      );
+      if(response){
+        toast.success("Meeting deleted successfully")
+        fetchMeetings();
+      }
+    } catch (error) {
+      toast.error("Failed to delete meeting")
+      console.error("Error fetching meetings:", error);
+    }
+  }
   return (
     <>
       <div className="mt-5">
@@ -45,14 +59,15 @@ export default function Meetings() {
             {meetings.map((meeting, index) => (
               <div
                 key={index}
-                className="rounded-md border-2 border-green-200 overflow-hidden"
+                className="rounded-md border-2 border-green-200 overflow-hidden relative "
               >
+              
+                <div className="text-red-500 absolute right-2 top-2 text-xl" onClick={()=>deleteMeet(meeting._id)}>  <MdDelete /></div>
                 <div className="p-2">
                   <h3 className="text-lg font-semibold">{meeting.title}</h3>
                   <p>Status: {meeting.status}</p>
                   <p>Date: {new Date(meeting.date).toLocaleDateString()}</p>
                   <p>Time: {new Date(meeting.time).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })}</p>
-                 <p>Time: {new Date(meeting.time).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" })}</p>
 
                   <p>For Product:</p>
                   <div className="inline-flex gap-2 overflow-x-auto">

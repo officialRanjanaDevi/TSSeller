@@ -20,7 +20,6 @@ export default function AddNewOffer() {
 
   const [authenticated] = useContext(UserContext);
   const sellerId = authenticated.user._id;
-
   const [selectedOptions, setSelectedOptions] = useState([]);
 
   const [data, setData] = useState([]);
@@ -43,6 +42,7 @@ export default function AddNewOffer() {
           applicableProducts: validApplicableProducts,
           validFrom,
           validUntil,
+          storeId:authenticated.user.storeId
         },
         {
           headers: {

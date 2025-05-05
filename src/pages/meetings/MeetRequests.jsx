@@ -13,7 +13,7 @@ import {
 import toast, { LoaderIcon } from "react-hot-toast";
 import axios from "axios";
 import { UserContext } from "../../components/context/UserContext";
-
+import { MdDelete } from "react-icons/md";
 const MeetRequest = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,33 +25,31 @@ const MeetRequest = () => {
   const [meetingStartDate, setMeetingStartDate] = useState(null);
   const [meetingStartTime, setMeetingStartTime] = useState(null);
   const [authenticated] = useContext(UserContext);
-  console.log(requests,"here it is")
-  console.log(selectedProducts)
-  useEffect(() => {
-    const fetchMeetings = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_ENDPOINT}/api/v1/videoRequests`,
-          {
-            method: "GET",
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch meetings");
+  const fetchMeetings = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_ENDPOINT}/api/v1/videoRequests`,
+        {
+          method: "GET",
         }
-        const resdata = await response.json();
-        setRequests(resdata);
-        const grouped = groupRequestsByProducts(resdata);
-        // const groupedUser = groupRequestsByUsers(resdata);
-        setGroupedRequests(grouped);
-        setSelectedUsers(resdata.userId)
-      } catch (error) {
-        console.error("Error fetching meetings:", error);
-        toast.error("Failed to Fetching Meeting Requests");
-      } finally {
-        setLoading(false);
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch meetings");
       }
-    };
+      const resdata = await response.json();
+      setRequests(resdata);
+      const grouped = groupRequestsByProducts(resdata);
+      // const groupedUser = groupRequestsByUsers(resdata);
+      setGroupedRequests(grouped);
+      setSelectedUsers(resdata.userId)
+    } catch (error) {
+      console.error("Error fetching meetings:", error);
+      toast.error("Failed to Fetching Meeting Requests");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchMeetings();
   }, []);
 
@@ -87,7 +85,6 @@ const MeetRequest = () => {
 
   const handleStatusChange = async (status, requestId) => {
     try {
-      console.log(requestId,status)
       const response = await fetch(
         `${
           import.meta.env.VITE_API_ENDPOINT
@@ -101,7 +98,10 @@ const MeetRequest = () => {
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to update status");
+        toast.error("Failed to update status");
+      }else{
+        setLoading(false);
+        fetchMeetings()
       }
 
       setRequests((prevRequests) =>
@@ -159,7 +159,20 @@ const MeetRequest = () => {
     setIsModalVisible(false);
     toast.success("Meeting created successfully!");
   };
-
+  const handleDelete=async(id)=>{
+    try{
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_ENDPOINT}/api/v1/videoRequests/${id}`
+      );
+      if(response){
+        toast.success("Meeting deleted successfully")
+        fetchMeetings();
+      }
+    }catch(e){
+      toast.error("Failed to delete meeting requests")
+      console.log(e)
+    }
+  }
   return (
     <>
       <div className="p-2">
@@ -189,7 +202,8 @@ const MeetRequest = () => {
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"
                 >
                   {group.map((item, index) => (
-                    <div key={index} className="bg-white rounded-md p-4">
+                    <div key={index} className="bg-white rounded-md p-6 relative">
+                      <div className="text-red-500 text-xl absolute top-1 right-1 cursor-pointer" onClick={()=>handleDelete(item._id)}> <MdDelete/></div>
                       <div className="ring-indigo-50 ring rounded-md relative">
                         <Checkbox
                           checked={selectedProducts.includes(item._id)}
@@ -259,19 +273,21 @@ const MeetRequest = () => {
                             {item?.status === "pending" && (
                               <Popover
                                 content={
-                                  <div className="flex flex-col gap-1 cursor-pointer">
+                                  <div className="flex flex-col gap-1 cursor-pointer" >
                                     <p
-                                      onClick={() =>
-                                        handleStatusChange("confirmed", item._id)
-                                      }
+                                      onClick={() =>{
+                                        setLoading(true);
+                                        handleStatusChange("confirmed", item._id);
+                                      }}
                                       className="hover:bg-green-300 px-3 py-1 rounded-md"
                                     >
                                       Approve
                                     </p>
                                     <p
-                                      onClick={() =>
+                                      onClick={() =>{
+                                        setLoading(true);
                                         handleStatusChange("cancelled", item._id)
-                                      }
+                                      }}
                                       className="hover:bg-red-300 px-3 py-1 rounded-md"
                                     >
                                       Reject

@@ -6,6 +6,7 @@ import { CiHeart } from "react-icons/ci";
 import { IoShareSocialOutline } from "react-icons/io5";
 import { SlDislike } from "react-icons/sl";
 import { LiaCommentSolid } from "react-icons/lia";
+import toast from "react-hot-toast";
 const UploadReel = () => {
   const [data, setData] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -13,7 +14,7 @@ const UploadReel = () => {
   const [authenticated] = useContext(UserContext);
   const parsedUserData = authenticated.user;
   const navigate = useNavigate();
- console.log(authenticated)
+  const [loading,setLoading]=useState();
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -23,11 +24,7 @@ const UploadReel = () => {
   };
 
   const postData = async () => {
-    if (!data) {
-      console.log("No file selected");
-      return;
-    }
-
+    setLoading(true)
     const formData = new FormData();
     formData.append("reel", data);
     formData.append("caption", caption);
@@ -43,18 +40,21 @@ const UploadReel = () => {
         }
       );
 
-      console.log(response.data);
       if (response.data) {
+        setLoading(false)
+        toast.success("Reel uploaded successfully")
         navigate("/reels");
       }
     } catch (e) {
+      setLoading(false)
+      toast.error("Failed to upload reel")
       console.log(e);
     }
   };
 
   return (
     <div className="w-full h-full p-4">
-      <div className="w-[500px] mx-auto shadow-md border-2 p-4 rounded m-4 flex flex-col gap-4 items-center">
+      <div className="w-[90vw] md:w-[500px] mx-auto shadow-md border-2 p-4 rounded m-4 flex flex-col gap-4 items-center">
         {preview ? (
           <div className="relative w-full h-full text-center">
             <video src={preview} controls className="border-2 border-black w-fit mx-auto h-[60vh] rounded " />
@@ -90,9 +90,13 @@ const UploadReel = () => {
        
         <button
           onClick={postData}
-          className="w-40 bg-amber-500 px-6 py-2 hover:scale-105 duration-300 rounded text-white text-lg"
+          disabled={loading}
+          className={`bg-amber-500 text-white rounded text-sm py-2 px-5 mr-2 hover:bg-amber-500 ${
+            loading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          Upload Reel
+          {loading?"Please wait...":"Upload Reel"}
+        
         </button>
       </div>
     </div>

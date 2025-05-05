@@ -21,7 +21,6 @@ const ZoomMeeting = ({
       const apiKey = import.meta.env.VITE_ZOOM_SDK_KEY;
       const apiSecret = import.meta.env.VITE_ZOOM_SDK_SECRET;
    
-     console.log(apiKey,apiSecret)
       const meetConfig = {
         meetingNumber: meetZoomId,
         userName: meetUsername, 

@@ -22,17 +22,15 @@ const Livemeeting = () => {
   useEffect(() => {
     const getBlog = async () => {
       const data = await fetchBlog(id);
-      console.log("hii",data)
       setTournament(data);
     };
 
     getBlog();
   }, [id]);
-
+ console.log(tournament)
   if (!tournament) {
     return <div>Loading...</div>;
   }
-
   return (
     <>
       <ZoomMeeting
@@ -41,7 +39,7 @@ const Livemeeting = () => {
         meetZoomPass={tournament?.zoom_meeting_password}
         meetId={tournament?._id}
         meetStatus={tournament?.status}
-        meetUsername={tournament?.sellerId}
+        meetUsername={tournament?.storeId?.storeName}
 
       />
     </>
